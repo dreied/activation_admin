@@ -9,23 +9,27 @@ class ActivationOutputBox extends StatelessWidget {
   final String code;
   const ActivationOutputBox({super.key, required this.code});
 
-  Future<void> _sendWhatsApp(BuildContext context) async {
-    if (code.isEmpty) return;
+ Future<void> _sendWhatsApp(BuildContext context) async {
+  if (code.isEmpty) return;
 
-    // Copy to clipboard
-    await Clipboard.setData(ClipboardData(text: code));
-    final phone = "963937749701";
-    final text = Uri.encodeComponent(code);
-    final uri = Uri.parse('https://wa.me/$phone?text=$text');
+  // Copy to clipboard
+  await Clipboard.setData(ClipboardData(text: code));
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Copied")),
+  );
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Could not open WhatsApp")),
-      );
-    }
+  // Open WhatsApp home screen
+  final uri = Uri.parse("whatsapp://app");
+
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("WhatsApp not installed")),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
