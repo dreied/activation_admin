@@ -4,7 +4,10 @@ import 'services/history_db.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await HistoryDb.instance.init();
+
+  // REMOVE THIS → await HistoryDb.instance.init();
+  // The DB initializes automatically on first use.
+
   runApp(const AdminActivationApp());
 }
 

@@ -26,29 +26,45 @@ class _PinGatePageState extends State<PinGatePage> {
   }
 
   @override
+  void dispose() {
+    _pinCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Admin Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: _pinCtrl,
-              obscureText: true,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: "PIN",
-                errorText: _error.isEmpty ? null : _error,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Admin Login")),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 40),
+          child: Column(
+            children: [
+              const Text(
+                "Enter Admin PIN",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              onSubmitted: (_) => _checkPin(),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _checkPin,
-              child: const Text("Enter"),
-            ),
-          ],
+              const SizedBox(height: 20),
+              TextField(
+                controller: _pinCtrl,
+                obscureText: true,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: "PIN",
+                  errorText: _error.isEmpty ? null : _error,
+                ),
+                onSubmitted: (_) => _checkPin(),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _checkPin,
+                  child: const Text("Enter"),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

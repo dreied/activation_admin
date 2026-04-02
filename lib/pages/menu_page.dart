@@ -25,7 +25,6 @@ class MenuPage extends StatelessWidget {
       return;
     }
 
-    // TODO: replace with your actual Render server URL
     const baseUrl = 'https://your-render-service.onrender.com';
 
     for (final rec in records) {
@@ -45,9 +44,7 @@ class MenuPage extends StatelessWidget {
         if (resp.statusCode == 200 && rec.id != null) {
           await HistoryDb.instance.markSynced(rec.id!);
         }
-      } catch (_) {
-        // ignore individual failures, show summary after
-      }
+      } catch (_) {}
     }
 
     scaffold.showSnackBar(
@@ -55,52 +52,89 @@ class MenuPage extends StatelessWidget {
     );
   }
 
+  Widget _menuButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: Icon(icon),
+        label: Text(label),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+        onPressed: onTap,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Activation Generator")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            ElevatedButton(
-              child: const Text("Generate for DPOS"),
-              onPressed: () => Navigator.push(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Activation Generator")),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _menuButton(
                 context,
-                MaterialPageRoute(builder: (_) => const DPOSActivationPage()),
+                icon: Icons.point_of_sale,
+                label: "Generate for DPOS",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const DPOSActivationPage()),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              child: const Text("Generate for DPharma"),
-              onPressed: () => Navigator.push(
+              const SizedBox(height: 10),
+              _menuButton(
                 context,
-                MaterialPageRoute(builder: (_) => const DPharmaActivationPage()),
+                icon: Icons.local_pharmacy,
+                label: "Generate for DPharma",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const DPharmaActivationPage()),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              child: const Text("Generate for Web"),
-              onPressed: () => Navigator.push(
+              const SizedBox(height: 10),
+              _menuButton(
                 context,
-                MaterialPageRoute(builder: (_) => const WebActivationPage()),
+                icon: Icons.web,
+                label: "Generate for Web",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const WebActivationPage()),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              child: const Text("History"),
-              onPressed: () => Navigator.push(
+              const SizedBox(height: 20),
+              _menuButton(
                 context,
-                MaterialPageRoute(builder: (_) => const HistoryPage()),
+                icon: Icons.history,
+                label: "History",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HistoryPage()),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.sync),
-              label: const Text("Sync Web Activations with Server"),
-              onPressed: () => _syncWebActivations(context),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _menuButton(
+                context,
+                icon: Icons.sync,
+                label: "Sync Web Activations with Server",
+                color: Colors.teal,
+                onTap: () => _syncWebActivations(context),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -30,24 +30,26 @@ class _HistoryPageState extends State<HistoryPage> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Edit Customer Info"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: "Customer Name",
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Customer Name",
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: phoneCtrl,
-              decoration: const InputDecoration(
-                labelText: "Customer Phone",
+              const SizedBox(height: 10),
+              TextField(
+                controller: phoneCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Customer Phone",
+                ),
+                keyboardType: TextInputType.phone,
               ),
-              keyboardType: TextInputType.phone,
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -65,7 +67,8 @@ class _HistoryPageState extends State<HistoryPage> {
     if (result == true && record.id != null) {
       await HistoryDb.instance.updateCustomerInfo(
         id: record.id!,
-        customerName: nameCtrl.text.trim().isEmpty ? 'Unknown' : nameCtrl.text.trim(),
+        customerName:
+            nameCtrl.text.trim().isEmpty ? 'Unknown' : nameCtrl.text.trim(),
         customerPhone: phoneCtrl.text.trim(),
       );
       await _load();
@@ -74,27 +77,39 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("History")),
-      body: history.isEmpty
-          ? const Center(child: Text("No activations yet"))
-          : ListView.builder(
-              itemCount: history.length,
-              itemBuilder: (_, i) {
-                final rec = history[i];
-                return ListTile(
-                  title: Text("${rec.customerName} (${rec.app.toUpperCase()})"),
-                  subtitle: Text(
-                    "Device: ${rec.deviceId}\nPhone: ${rec.customerPhone}\nCreated: ${rec.createdAt.toLocal()}",
-                  ),
-                  isThreeLine: true,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _editRecord(rec),
-                  ),
-                );
-              },
-            ),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: const Text("History")),
+        body: history.isEmpty
+            ? const Center(child: Text("No activations yet"))
+            : ListView.builder(
+                padding: const EdgeInsets.only(bottom: 20),
+                itemCount: history.length,
+                itemBuilder: (_, i) {
+                  final rec = history[i];
+                  return Card(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: ListTile(
+                      title: Text(
+                        "${rec.customerName} (${rec.app.toUpperCase()})",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        "Device: ${rec.deviceId}\n"
+                        "Phone: ${rec.customerPhone}\n"
+                        "Created: ${rec.createdAt.toLocal()}",
+                      ),
+                      isThreeLine: true,
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _editRecord(rec),
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

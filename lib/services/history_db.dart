@@ -1,5 +1,5 @@
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 class ActivationRecord {
   final int? id;
@@ -21,6 +21,28 @@ class ActivationRecord {
     required this.createdAt,
     required this.synced,
   });
+
+  ActivationRecord copyWith({
+    int? id,
+    String? app,
+    String? deviceId,
+    String? customerName,
+    String? customerPhone,
+    String? activationCode,
+    DateTime? createdAt,
+    bool? synced,
+  }) {
+    return ActivationRecord(
+      id: id ?? this.id,
+      app: app ?? this.app,
+      deviceId: deviceId ?? this.deviceId,
+      customerName: customerName ?? this.customerName,
+      customerPhone: customerPhone ?? this.customerPhone,
+      activationCode: activationCode ?? this.activationCode,
+      createdAt: createdAt ?? this.createdAt,
+      synced: synced ?? this.synced,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -55,17 +77,22 @@ class HistoryDb {
 
   Database? _db;
 
-  Future<void> init() async {
-    if (_db != null) return;
+  Future<Database> get database async {
+    if (_db != null) return _db!;
+    _db = await _init();
+    return _db!;
+  }
+
+  Future<Database> _init() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'activation_history.db');
 
-    _db = await openDatabase(
+    return openDatabase(
       path,
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE activations (
+          CREATE TABLE history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             app TEXT NOT NULL,
             deviceId TEXT NOT NULL,
@@ -76,27 +103,46 @@ class HistoryDb {
             synced INTEGER NOT NULL
           )
         ''');
+        await db.execute(
+          'CREATE INDEX idx_app_device ON history(app, deviceId)',
+        );
       },
     );
   }
 
-  Database get db {
-    if (_db == null) {
-      throw Exception('HistoryDb not initialized. Call HistoryDb.instance.init() in main().');
-    }
-    return _db!;
-  }
-
   Future<int> insertRecord(ActivationRecord record) async {
-    return await db.insert('activations', record.toMap());
+    final db = await database;
+    return db.insert('history', record.toMap());
   }
 
   Future<List<ActivationRecord>> getAllRecords() async {
+    final db = await database;
     final rows = await db.query(
-      'activations',
+      'history',
       orderBy: 'createdAt DESC',
     );
     return rows.map(ActivationRecord.fromMap).toList();
+  }
+
+  Future<List<ActivationRecord>> getUnsyncedWebActivations() async {
+    final db = await database;
+    final rows = await db.query(
+      'history',
+      where: 'app = ? AND synced = 0',
+      whereArgs: ['web'],
+      orderBy: 'createdAt ASC',
+    );
+    return rows.map(ActivationRecord.fromMap).toList();
+  }
+
+  Future<void> markSynced(int id) async {
+    final db = await database;
+    await db.update(
+      'history',
+      {'synced': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<void> updateCustomerInfo({
@@ -104,8 +150,9 @@ class HistoryDb {
     required String customerName,
     required String customerPhone,
   }) async {
+    final db = await database;
     await db.update(
-      'activations',
+      'history',
       {
         'customerName': customerName,
         'customerPhone': customerPhone,
@@ -115,22 +162,40 @@ class HistoryDb {
     );
   }
 
-  Future<List<ActivationRecord>> getUnsyncedWebActivations() async {
+  Future<ActivationRecord?> getByAppAndDevice(
+      String app, String deviceId) async {
+    final db = await database;
     final rows = await db.query(
-      'activations',
-      where: 'app = ? AND synced = 0',
-      whereArgs: ['web'],
-      orderBy: 'createdAt ASC',
+      'history',
+      where: 'app = ? AND deviceId = ?',
+      whereArgs: [app, deviceId],
+      orderBy: 'createdAt DESC',
+      limit: 1,
     );
-    return rows.map(ActivationRecord.fromMap).toList();
+    if (rows.isEmpty) return null;
+    return ActivationRecord.fromMap(rows.first);
   }
 
-  Future<void> markSynced(int id) async {
-    await db.update(
-      'activations',
-      {'synced': 1},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+  Future<void> upsertByAppAndDevice(ActivationRecord record) async {
+    final existing = await getByAppAndDevice(record.app, record.deviceId);
+    final db = await database;
+
+    if (existing == null) {
+      await db.insert('history', record.toMap());
+    } else {
+      final updated = existing.copyWith(
+        customerName: record.customerName,
+        customerPhone: record.customerPhone,
+        activationCode: record.activationCode,
+        createdAt: record.createdAt,
+        synced: false,
+      );
+      await db.update(
+        'history',
+        updated.toMap(),
+        where: 'id = ?',
+        whereArgs: [existing.id],
+      );
+    }
   }
 }
