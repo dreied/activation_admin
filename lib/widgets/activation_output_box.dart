@@ -14,9 +14,9 @@ class ActivationOutputBox extends StatelessWidget {
 
     // Copy to clipboard
     await Clipboard.setData(ClipboardData(text: code));
-
+    final phone = "963937749701";
     final text = Uri.encodeComponent(code);
-    final uri = Uri.parse('https://wa.me/?text=$text');
+    final uri = Uri.parse('https://wa.me/$phone?text=$text');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -55,6 +55,7 @@ class ActivationOutputBox extends StatelessWidget {
               icon: const Icon(Icons.copy),
               label: const Text("Copy"),
               onPressed: () {
+                
                 Clipboard.setData(ClipboardData(text: code));
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Copied")),
@@ -73,3 +74,25 @@ class ActivationOutputBox extends StatelessWidget {
     );
   }
 }
+
+
+ /*fingerprint = await ActivationService.getFingerprint();
+
+ElevatedButton.icon(
+  icon: const Icon(FontAwesomeIcons.whatsapp, color: Colors.white),
+  label: const Text(
+    "WhatsApp",
+    style: TextStyle(color: Colors.white),
+  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.green,
+    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+  ),
+  onPressed: () {
+    final phone = "963937749701"; // same number
+    final message = Uri.encodeComponent(fingerprint); // send fingerprint
+    final url = "https://wa.me/$phone?text=$message";
+
+    launchUrl(Uri.parse(url));
+  },
+),*/
