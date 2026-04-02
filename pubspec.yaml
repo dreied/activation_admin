@@ -1,0 +1,41 @@
+name: activation_admin
+description: "Activation generator"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  shared_preferences: ^2.2.2
+  basic_utils: ^5.7.0
+  sqflite: ^2.3.0
+  path: ^1.9.0
+  url_launcher: ^6.3.0
+  http: ^1.2.0
+  cupertino_icons: ^1.0.8
+  crypto: ^3.0.3
+  mobile_scanner: ^3.5.5
+  pointycastle: ^3.7.3
+  font_awesome_flutter: ^10.7.0
+
+  share_plus: ^10.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+
+  assets:
+    - assets/keys/private_dpos.pem
+    - assets/keys/private_dpharma.pem
+    - assets/keys/private_web.pem
+    
